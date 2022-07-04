@@ -1,0 +1,140 @@
+from ctypes import alignment
+import requests
+import smtplib
+import json
+
+
+from tkinter import *
+import tkinter.messagebox
+from tkinter import simpledialog
+
+NEWS_ENDPOINT = "https://newsapi.org/v2/everything"
+NEWS_API_KEY = "1cf868802b6545909bd990752e217368"
+
+my_email = "python.news.project@gmail.com"
+password = "iuhaexlvbvspffsl"
+
+connection = smtplib.SMTP("smtp.gmail.com",587)
+connection.starttls()
+connection.login(user=my_email , password= password)
+
+#search = "maharashtra"
+
+
+
+
+
+
+#print(message)
+#print(final)
+#print (smart_str(message))
+
+"""""
+try:
+    connection.sendmail(from_addr=my_email, to_addrs="rmitra3101@gmail.com ",msg=f"Subject:{search}\n\n {message}")#test it by putting your mail
+    print("mail sent")
+except:
+    connection.sendmail(from_addr=my_email, to_addrs="rmitra3101@gmail.com",msg=f"Subject: News\n\n {final}")
+    print("mail not send")
+"""
+    
+#----------------------------------------------------------#
+
+root = tkinter.Tk()
+root.title("News App")
+#root.geometry('600x600')
+
+def onClick():
+    #tkinter.messagebox.showinfo("NEWS",  message)
+
+    input = news_input.get()
+    if input == "":
+        tkinter.messagebox.showinfo("Warning",  message="Please type something First")
+    else:
+        news_params = {
+            "apiKey": NEWS_API_KEY,
+            "q": input,#you can put any terms here 
+            
+        }
+        message =""
+        news_response = requests.get(NEWS_ENDPOINT, params= news_params)    
+        articles = news_response.json()["articles"]
+
+        with open("data.json","w") as data_file:
+            json.dump(news_response.json(),data_file, indent = 4)
+        str1=""
+        str2=""
+        str3=""
+        three_articles = articles[:3]
+        for article in three_articles:
+            str1 =article["title"]
+            #str2 = str1.encode('utf-8', 'ignore').decode('utf-8')
+            title_i = article["title"].encode("ascii", "ignore")
+            title_f = title_i.decode()
+            dec_i = article["description"].encode("ascii", "ignore")
+            dec_f = dec_i.decode()
+            url_i = article["url"].encode("ascii", "ignore")
+            url_f = url_i.decode()
+            #print(str2)
+            str3 = str3+str2
+            message = message + title_f+"\n" + dec_f +"\n"+ url_f+"\n\n"
+        output.configure(state = 'normal')
+        output.delete(1.0,END)
+        output.insert(END,message)
+        output.configure(state = 'disable')
+        news_box = tkinter.messagebox.askyesno(title="NEWS", message=f"{message}\n\n Do you want it on mail")
+        
+        email_input =""
+        if news_box:
+            email_input = simpledialog.askstring("email input","please enter you email address")
+            if not email_input:
+                tkinter.messagebox.showinfo("Okay",  message="Looks like no email ID was provided")
+            else:
+                connection.sendmail(from_addr=my_email, to_addrs= email_input,msg=f"Subject:{input}\n\n {message}")#test it by putting your mail
+                print("mail sent")
+                tkinter.messagebox.showinfo("Yayyyyy",  message="Mail Sent")
+
+news_input = Entry(width = 50)
+news_input.grid(column=1, row=2)
+news_input.focus()
+
+button = Button(root, text="SEARCH", command=onClick, height=2, width=10, bg="coral1", font="bold")
+#button.pack()
+#button.place(relx=0.5, rely=0.4, anchor=CENTER)
+button.grid(column=1 , row = 3)
+
+
+
+bg_color = "orange2"
+#text_area_bg = "yellow"
+#basic_font_color = "red"
+title = Label(root, text="Type to get News", font=("times new roman", 30, "bold"),pady=2, bd=12, relief=GROOVE, bg="coral1", fg="black")
+title.grid(column=1,row=0)
+
+news_title = Label(root,text="News Area", font=("times new roman", 20, "bold"), bd=7, relief=GROOVE,width =40)
+news_title.grid(column =1 ,row =4,columnspan=3)
+output = Text(root, height = 20,width = 80,bg = "pink",padx =15,state = 'disable',wrap = 'word')
+output.grid(column=1,row=5)
+
+
+""""
+F2 = Frame(root, bd=7, relief=GROOVE)
+F2.place(x=200, y=420, relwidth=0.7, relheight=0.5)
+news_title = Label(F2, text="News Area", font=("times new roman", 20, "bold"), bd=7, relief=GROOVE).pack(fill=X)
+scroll_y = Scrollbar(F2, orient=VERTICAL)
+txtarea = Text(F2, yscrollcommand=scroll_y.set, font=("times new roman", 15, "bold"), bg=text_area_bg, fg="#3206b8")
+scroll_y.pack(side=RIGHT, fill=Y)
+scroll_y.config(command=txtarea.yview)
+txtarea.insert(END, "KINDLY WAIT FOR THE NEWS")
+txtarea.pack(fill=BOTH, expand=1)
+"""
+
+
+root.title('PythonGuides')
+#root.geometry('400x300')
+root.config(bg='misty rose')
+
+
+
+
+root.mainloop()
